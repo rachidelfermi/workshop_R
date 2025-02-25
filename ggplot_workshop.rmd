@@ -1,0 +1,475 @@
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Instructions
+
+```{r code_file_instructions, echo=FALSE, eval=FALSE}
+## INSTRUCTIONS:
+## 1. TO RUN A COMMAND, PLACE CURSOR INSIDE COMMAND
+##    OR HIGHLIGHT COMMAND(S) AND HIT CTRL-ENTER (COMMAND-ENTER FOR MACS)
+## 2. TO RUN ALL CODE FROM BEGINNING OF FILE TO CURRENT LINE,
+##    HIT CTRL-ALT-B (RSTUDIO ONLY)
+## 3. COMMANDS THAT BEGIN WITH # ARE COMMENTS AND WILL NOT BE EXECUTED
+## 4. NOTE: A FEW COMMANDS MAY PURPOSEFULLY RESULT IN ERRORS FOR TEACHING PURPOSES
+## 5. USE CTRL-F TO FIND
+```
+
+## Load Required Libraries
+
+```{r load_libraries}
+library(ggplot2)
+library(MASS)
+```
+
+## Scatter Plot Example
+
+```{r ggplot_scatter, fig.cap="geom_point() inherits x and y aesthetics"}
+ggplot(txhousing, aes(x=volume, y=sales)) +
+  geom_point()
+```
+
+```{r ggplot_no_geom, fig.cap="Without a geom or stat, just axes"}
+ggplot(data = txhousing, aes(x=volume, y=sales))
+```
+
+```{r override, fig.cap="Both geoms inherit aesthetics from ggplot, but geom_rug() also adds color aesthetic"}
+ggplot(txhousing, aes(x=volume, y=sales)) +
+  geom_point() +
+  geom_rug(aes(color=listings))
+```
+
+## Mapping Aesthetic Example
+
+```{r mapping_color, fig.cap="Color of points varies with number of listings"}
+ggplot(txhousing, aes(x=volume, y=sales)) +
+  geom_point(aes(color=listings))
+```
+
+```{r setting_color, fig.cap="Color of points set to constant green"}
+ggplot(txhousing, aes(x=volume, y=sales)) +
+  geom_point(color="green")
+```
+
+```{r color_inside_aes, fig.cap="Aesthetic set to constant within aes() leads to unexpected results"}
+ggplot(txhousing, aes(x=volume, y=sales)) +
+  geom_point(aes(color="green"))
+```
+
+## Histogram and Density Plots
+
+```{r hist, fig.cap="Histograms visualize distribution of variable mapped to x"}
+ggplot(txhousing, aes(x=median)) + 
+  geom_histogram()
+```
+
+```{r density, fig.cap="Density plots visualize smoothed distribution of variable mapped to x"}
+#Denisty plots are basically smoothed histograms.
+
+#Density plots, unlike histograms, can be plotted separately by group by mapping #a grouping variable to color
+ggplot(txhousing, aes(x=median)) + 
+  geom_density()
+```
+
+```{r density_color, fig.cap="Densities of median price by month"}
+ggplot(txhousing, aes(x=median, color=factor(month))) + 
+  geom_density()
+```
+
+## Boxplot Example
+
+```{r boxplot, fig.cap="Boxplots are useful to compare distribution of y variable across levels of x variable"}
+ggplot(txhousing, aes(x=factor(year), y=median)) + 
+  geom_boxplot()
+```
+
+## Barplot Example
+<!-- Bar plots are often used to display frequencies of factor (categorical) variables. -->
+
+<!-- geom_bar() by default produces a bar plot where the height of the bar represents counts of each x-value. -->
+
+<!-- The color that fills the bars is not controlled by color, but instead by fill, which can only be mapped to a factor (categorical) variable. We can visualize a crosstabulation of variables by mapping one of them to fill in geom_bar(): -->
+
+```{r barplot, fig.cap="geom_bar displays frequencies of levels of x variable"}
+ggplot(diamonds, aes(x=cut)) + 
+  geom_bar()
+```
+
+```{r barplot_fill, fig.cap="Frequencies of cut by clarity"}
+ggplot(diamonds, aes(x=cut, fill=clarity)) + 
+  geom_bar()
+```
+
+## Line Graph Example
+<!-- Line graphs depict covariation between variables mapped to x and y with lines instead of points. -->
+
+<!-- geom_line() will treat all data as belonging to one line unless a variable is mapped to one of the following aesthetics to group the data into separate lines: -->
+
+<!-- group: lines will look the same -->
+<!-- color: line colors will vary with mapped variable -->
+<!-- linetype: line patterns will vary with mapped variable -->
+<!-- Let’s first examine a line graph with no grouping: -->
+
+```{r line_graph, fig.cap="Line graph of sales over time, separate lines by city"}
+ggplot(txhousing, aes(x=date, y=sales, group=city)) + 
+  geom_line()
+```
+
+```{r line_graph_color, fig.cap="Line graph of sales over time, colored and grouped by city"}
+ggplot(txhousing, aes(x=date, y=sales, color=city)) + 
+  geom_line()
+```
+
+## Scatter Plots
+<!-- Scatter plots depict the covariation between pairs of variables (typically both continuous). -->
+
+<!-- geom_point() depicts covariation between variables mapped to x and y. -->
+
+<!-- Scatter plots are among the most flexible graphs, as variables can be mapped to many aesthetics such as color, shape, size, and alpha. -->
+
+```{r scatter_1, fig.cap="Scatter plot of volume vs sales"}
+ggplot(txhousing, aes(x=volume, y=sales)) + 
+  geom_point()
+```
+
+```{r scatter_2, fig.cap="Scatter plot of volume vs sales, colored by number of listings, transparent by median price, and sized by inventory"}
+ggplot(txhousing, aes(x=volume, y=sales, color=listings, alpha=median, size=inventory)) + 
+  geom_point()
+```
+
+
+## Line Graph Examples
+
+```{r line_graph_1, fig.cap="Line graph of sales over time, separate lines by city"}
+
+```
+
+```{r line_graph_2, fig.cap="Line graph of sales over time, no grouping results in garbled graph"}
+
+```
+
+```{r line_graph_3, fig.cap="Line graph of sales over time, colored and grouped by city"}
+
+```
+
+## Statistical Summaries
+<!-- The stat functions statistically transform data, usually as some form of summary, such as the mean, or standard devation, or a confidence interval. -->
+
+<!-- Each stat function is associated with a default geom, so no geom is required for shapes to be rendered. -->
+
+<!-- stat_summary(), perhaps the most useful of all stat functions, applies a summary function to the variable mapped to y for each value of the x variable. The default summary function is mean_se(), with associated geom geom_pointrange(), which will produce a plot of the mean (dot) and standard error (lines) of the variable mapped to y for each value of the x variable. -->
+
+```{r stat_summary_1, fig.cap="Mean and standard errors of sales by year"}
+ggplot(txhousing, aes(x=year, y=sales)) + 
+  stat_summary()
+```
+
+## Example Scales
+
+```{r example_scales, echo=FALSE}
+color_scale <- data.frame(color=c("red", "blue"), treat=c("ozone", "control"))
+knitr::kable(color_scale)
+```
+
+## Customizing Scales
+
+```{r scale_default, fig.cap="Default color scale"}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + 
+  geom_point()
+```
+#
+#  can use scale_colour_manual() to specify which colors we want to use in values=:
+<!-- Scale functions for the axes -->
+<!-- Remember that x and y are aesthetics, and the two axes visualize the scale for these aesthetics. -->
+
+<!-- Thus, we use scale functions to control to the scaling of these axes. -->
+
+<!-- When y is mapped to a continuous variable, we will typically use scale_y_continuous() to control its scaling (use scale_y_discrete() if y is mapped to factor). Similar functions exist for the x aesthetic. -->
+
+<!-- A description of some of the important arguments to scale_y_continuous(): -->
+
+<!-- breaks: at what data values along the range of of the axis to place tick marks and labels -->
+<!-- labels: what to label the tick marks -->
+<!-- name: what to title the axis -->
+<!-- Our current graph of volume vs sales has y-axis tick marks at 0, 5000, 10000, and 15000 -->
+
+```{r scale_manual, fig.cap="Using scale_color_manual to respecify colors"}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + 
+  geom_point() +
+  scale_color_manual(values=c("red", "yellow", "green", "blue", "violet"))
+```
+
+# Let’s put tick marks at all grid lines along the y-axis using the breaks argument of scale_y_continuous:
+
+```{r scale_ticks, fig.cap="Changing y-axis tick marks"}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + 
+  geom_point() +
+  scale_y_continuous(breaks=c(0,2500,5000,7500,10000,12500,15000,17500))
+```
+#
+# Now let’s relabel the tick marks to reflect units of thousands (of dollars) using labels:
+#
+
+```{r scale_labels, fig.cap="Relabeling y-axis tick marks"}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + 
+  geom_point() +
+  scale_y_continuous(breaks=c(0,2500,5000,7500,10000,12500,15000,17500),
+                     labels=c(0,2.5,5,7.5,10,12.5,15,17.5))
+```
+
+```{r scale_axis_title, fig.cap="New y-axis title"}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + 
+  geom_point() +
+  scale_y_continuous(breaks=c(0,2500,5000,7500,10000,12500,15000,17500),
+                     labels=c(0,2.5,5,7.5,10,12.5,15,17.5),
+                     name="Price (thousands of dollars)")
+```
+<!-- Although we can use scale functions like scale_x_continuous() to control the limits and titles of the x-axis, we can also use the following shortcut functions: -->
+
+<!-- lims(), xlim(), ylim(): set axis limits -->
+<!-- xlab(), ylab(), ggtitle(), labs(): give labels (titles) to x-axis, y-axis, or graph; labs can set labels for all aesthetics and title -->
+<!-- To set axis limits, supply a vector of 2 numbers (inside c(), for example) to one of the limits functions: -->
+
+
+
+```{r x_axis_limits, fig.cap="Restricting axis limits will zoom in"}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + 
+  geom_point() +
+  xlim(c(1,3))
+```
+
+## Custom Labels
+#We can use labs() to specify an overall titles for the overall graph, the axes,and legends (guides).
+
+```{r custom_labels, fig.cap="Respecifying all titles with labs"}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + 
+  geom_point() +
+  labs(x="CARAT", y="PRICE", color="CUT", title="CARAT vs PRICE by CUT")
+```
+
+## Guides and Legends
+<!-- Guides visualize scales -->
+<!-- Guides (axes and legends) visualize a scale, displaying data values and their matching aesthetic values. -->
+
+<!-- the x-axis visualizes the mapping of data values to a position along the x-axis. -->
+<!-- a color scale guide (legend) displays the colors mapped to data values. -->
+<!-- Most guides are displayed by default. The guides() function sets and removes guides for each scale. -->
+
+<!-- Here we use guides() to remove the color scale legend: -->
+
+```{r remove_legend, fig.cap="Color legend removed"}
+ggplot(txhousing, aes(x=volume, y=sales, color=median)) + 
+  geom_point() +
+  guides(color="none")
+```
+
+## Faceting
+<!-- Split plots into small multiples (panels) with the faceting functions, facet_wrap() and facet_grid(). The resulting graph shows how each plot varies along the faceting variable(s). -->
+
+<!-- facet_wrap() wraps a ribbon of plots into a multirow panel of plots. Inside facet_wrap(), specify ~, then a list of splitting variables, separated by +. The number of rows and columns can be specified with arguments nrow and ncol. -->
+
+```{r facet_wrap, fig.cap="Carat vs Price, paneled by cut with facet_wrap()"}
+ggplot(diamonds, aes(x=carat, y=price)) + 
+  geom_point() + 
+  facet_wrap(~cut)
+```
+<!-- facet_grid() allows direct specification of which variables are used to split the data/plots along the rows and columns. Put the row-splitting variable before ~, and the column-splitting variable after. The character . specifies no faceting along that dimension. -->
+```{r facet_grid, fig.cap="Carat vs Price, paneled by clarity and cut with facet_grid()"}
+ggplot(diamonds, aes(x=carat, y=price)) + 
+  geom_point() + 
+  facet_grid(clarity~cut)
+```
+
+
+## Line Graph Examples
+
+```{r line_graph_1, fig.cap="Line graph of sales over time, separate lines by city"}
+
+```
+
+```{r line_graph_2, fig.cap="Line graph of sales over time, no grouping results in garbled graph"}
+
+```
+
+```{r line_graph_3, fig.cap="Line graph of sales over time, colored and grouped by city"}
+
+```
+
+## Statistical Summaries
+
+```{r stat_summary_1, fig.cap="Mean and standard errors of sales by year"}
+
+```
+
+## Example Scales
+
+```{r example_scales, echo=FALSE}
+
+```
+
+## Customizing Scales
+
+```{r scale_default, fig.cap="Default color scale"}
+
+```
+
+```{r scale_manual, fig.cap="Using scale_color_manual to respecify colors"}
+
+```
+
+## Themes and Customizations
+<!-- Themes control elements of the graph not related to the data. For example: -->
+
+<!-- background color -->
+<!-- size of fonts -->
+<!-- gridlines -->
+<!-- color of labels -->
+<!-- To modify these, we use the theme() function, which has a large number of arguments called theme elements, which control various non-data elements of the graph. -->
+
+<!-- Some example theme() arguments and what aspect of the graph they control: -->
+
+<!-- axis.line : lines forming x-axis and y-axis -->
+<!-- axis.line.x: just the line for x-axis -->
+<!-- legend.position: positioning of the legend on the graph -->
+<!-- panel.background: the background of the graph -->
+<!-- panel.border: the border around the graph -->
+<!-- title: all titles on the graph -->
+```{r theme_axis_line, fig.cap="Using theme argument axis.line to modify x-axis and y-axis lines"}
+ggplot(txhousing, aes(x=volume, y=sales, color=listings)) + 
+  geom_point() +
+  theme(axis.line=element_line(color="black", size=2))
+```
+<!-- However, the background of the graph, controlled by theme() argument panel.background is a rectangle, so parameters like fill color and border color can be specified element_rect() -->
+```{r theme_panel_background, fig.cap="Using theme element axis.line.x to modify x-axis line"}
+ggplot(txhousing, aes(x=volume, y=sales, color=listings)) + 
+  geom_point() +
+  theme(axis.line=element_line(color="black", size=2),
+        panel.background=element_rect(fill="white", color="gray"))
+```
+<!-- With element_text() we can control properties such as the font family or face ("bold", "italic", "bold.italic") of text elements like title, which controls the titles of both axes. -->
+```{r theme_title, fig.cap="Using theme argument title to adjust fonts of all titles"}
+ggplot(txhousing, aes(x=volume, y=sales, color=listings)) + 
+  geom_point() +
+  theme(axis.line=element_line(color="black", size=2),
+        panel.background=element_rect(fill="white", color="gray"),
+        title=element_text(family="serif", face="bold"))
+```
+#Finally, some theme() arguments do not use element_ functions to control their properties, like legend.position, which simply accepts values "none", "left", "right", "bottom", and "top".
+```{r theme_legend_position, fig.cap="Using theme argument legend.position to position legend"}
+ggplot(txhousing, aes(x=volume, y=sales, color=listings)) + 
+  geom_point() +
+  theme(axis.line=element_line(color="black", size=2),
+        panel.background=element_rect(fill="white", color="gray"),
+        title=element_text(family="serif", face="bold"),
+        legend.position="bottom")
+```
+
+```{r theme_classic, fig.cap="theme_classic()"}
+ggplot(txhousing, aes(x=volume, y=sales, color=listings)) + 
+  geom_point() +
+  theme_classic()
+```
+
+#theme_dark() makes a dramatic change to the look:
+```{r theme_dark, fig.cap="theme_dark()"}
+ggplot(txhousing, aes(x=volume, y=sales, color=listings)) + 
+  geom_point() +
+  theme_dark()
+```
+
+## Saving Plots
+
+```{r save_plot, eval=FALSE}
+# Save last displayed plot as pdf
+ggsave("plot.pdf")
+
+# If you're working with lots of graphs, you can store them in R objects
+p <- ggplot(Sitka, aes(x=Time, y=size)) +
+  geom_point()
+# Use the plot argument of ggsave() to specify which plot to save
+ggsave("myplot.png", plot=p)
+```
+
+## Line Graph Examples
+
+<!-- The birthwt data set contains data regarding risk factors associated with -->
+<!-- low infant birth weight. -->
+<!-- The data consist of 189 observations of 10 variables, all numeric: -->
+<!-- low: 0/1 indicator of birth weight < 2.5 kg -->
+<!-- age: mother’s age -->
+<!-- lwt: mother’s weight in pounds -->
+<!-- race: mother’s race, (1=white, 2=black, 3=other) -->
+<!-- smoke: 0/1 indicator of smoking during pregnancy -->
+<!-- ptl: number of previous premature labors -->
+<!-- ht: 0/1 indicator of history of hypertension -->
+<!-- ui: 0/1 indicator of uterine irritability -->
+<!-- ftv: numer of physician visits during first trimester -->
+<!-- bwt: birth weight -->
+<!-- Let’s take a look at the structure of the birthwt data set first, to get an -->
+<!-- idea of how the variables are measured. -->
+
+```{r color numeric, fig.cap="color gradient is appropriate for a continuous variable"}
+ggplot(birthwt, aes(x=age, y=bwt, color=race)) +
+  geom_point()
+```
+
+```{r color factor, fig.cap="evenly spaced hues emphasize contrasts between groups of a factor"}
+ggplot(birthwt, aes(x=age, y=bwt, color=factor(race))) +
+  geom_point()
+```
+
+```{r shape factor, fig.cap="evenly spaced hues emphasize contrasts between groups of a factor"}
+ggplot(birthwt, aes(x=age, y=bwt, shape=factor(race))) +
+  geom_point()
+```
+
+```{r size discrete, fig.cap="size and alpha should only be mapped to numeric variables", warning=TRUE}
+ggplot(birthwt, aes(x=age, y=bwt, size=factor(race))) +
+  geom_point()
+```
+
+## Factor Variables
+
+```{r smoke factor}
+birthwt$smokef <- factor(birthwt$smoke, levels=0:1, labels=c("did not smoke", "smoked"))
+birthwt$racef <- factor(birthwt$race, levels=1:3, labels=c("white", "black", "other"))
+```
+
+## Boxplot of Birthweight by Smoking Status
+
+```{r weight by smoke, fig.cap="birth weight distribution by mother's smoking status"}
+ggplot(birthwt, aes(y=bwt, fill=smokef)) +
+  geom_boxplot()
+```
+
+## Overlapping Points
+
+```{r overlapping.points, fig.cap="too many discrete values leads to overlapping points"}
+ggplot(birthwt, aes(x=racef, y=age)) +
+  geom_point()
+```
+
+```{r jitter, fig.cap="jittering adds random variation to the position of the points"}
+ggplot(birthwt, aes(x=racef, y=age)) +
+  geom_point(position="jitter")
+```
+
+## Bar Charts
+
+```{r stack, fig.cap="geom_bar() will stack bars with the same x-position"}
+ggplot(birthwt, aes(x=low, fill=racef)) +
+  geom_bar()
+```
+
+```{r dodge, fig.cap="dodging emphasizes counts"}
+ggplot(birthwt, aes(x=low, fill=racef)) +
+  geom_bar(position="dodge")
+```
+
+```{r fill, fig.cap="filling emphasizes proportions"}
+ggplot(birthwt, aes(x=low, fill=racef)) +
+  geom_bar(position="fill")
+```
+
